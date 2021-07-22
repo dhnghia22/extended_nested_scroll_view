@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:extended_nested_scroll_view/src/nested_scroll_view_inner_scroll_position_key_widget.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/physics.dart';
@@ -191,8 +190,8 @@ class NestedScrollView extends StatefulWidget {
     required this.headerSliverBuilder,
     required this.body,
     this.dragStartBehavior = DragStartBehavior.start,
-    this.stretchHeaderSlivers = false,
     this.floatHeaderSlivers = false,
+    this.stretchHeaderSlivers = false,
     this.clipBehavior = Clip.hardEdge,
     this.restorationId,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
@@ -571,7 +570,7 @@ class _NestedScrollCoordinator
     this.pinnedHeaderSliverHeightBuilder,
     this.innerScrollPositionKeyBuilder,
     this._floatHeaderSlivers,
-    this._stretchHeaderSlivers
+      this._stretchHeaderSlivers,
   ) {
     final double initialScrollOffset = _parent?.initialScrollOffset ?? 0.0;
     _outerController = _NestedScrollController(this,
@@ -731,7 +730,8 @@ class _NestedScrollCoordinator
       }
     }
 
-    if (innerPosition == null || (_stretchHeaderSlivers && innerPosition.pixels <=_currentDrag 0.0)) {
+    // Kenshin: if innser scrollview is scrolled beyond top, change _outerPosition only
+    if (innerPosition == null || (_stretchHeaderSlivers && innerPosition.pixels == 0.0)) {
       // It's either just us or a velocity=0 situation.
       return _outerPosition!.createBallisticScrollActivity(
         _outerPosition!.physics
@@ -759,6 +759,7 @@ class _NestedScrollCoordinator
       ),
       mode: _NestedBallisticScrollActivityMode.inner,
     );
+
   }
 
   _NestedScrollMetrics _getMetrics(
@@ -802,7 +803,7 @@ class _NestedScrollCoordinator
         // This handles going backward (fling down) and inner list is
         // underscrolled. We want to grab the extra pixels immediately to grow.
         extra = _outerPosition!.pixels - _outerPosition!.minScrollExtent;
-        extra = extra < 0 ? extra : 0;
+        extra = extra > 0 ? extra : 0;
         assert(extra >= 0.0);
         minRange = pixels - extra;
         maxRange = pixels;
@@ -824,6 +825,7 @@ class _NestedScrollCoordinator
               (_outerPosition!.maxScrollExtent -
                   _outerPosition!.minScrollExtent);
         }
+        extra = extra < 0 ? extra : 0;
         assert(extra <= 0.0);
         minRange = _outerPosition!.minScrollExtent;
         maxRange = _outerPosition!.maxScrollExtent + extra;
@@ -946,18 +948,7 @@ class _NestedScrollCoordinator
       if (outerDelta != 0.0) {
         final double innerDelta =
             _outerPosition!.applyClampedPointerSignalUpdate(outerDelta);
-
-        // this is a bug that the out postion is not overscroll actually and it get minimal value
-        // do under code will scroll inner positions
-        // igore minimal value here(value like following data)
-        // I/flutter (14963): 5.684341886080802e-14
-        // I/flutter (14963): -5.684341886080802e-14
-        // I/flutter (14963): -5.684341886080802e-14
-        // I/flutter (14963): 5.684341886080802e-14
-        // I/flutter (14963): -5.684341886080802e-14
-        // I/flutter (14963): -5.684341886080802e-14
-        // I/flutter (14963): -5.684341886080802e-14
-        if (innerDelta.abs() > precisionErrorTolerance) {
+        if (innerDelta != 0.0) {
           for (final _NestedScrollPosition position in _currentInnerPositions)
             position.applyClampedPointerSignalUpdate(innerDelta);
         }
@@ -1079,7 +1070,6 @@ class _NestedScrollCoordinator
           outerDelta = math.max(outerDelta, overscroll);
           overscrolls.add(overscroll);
         }
-        
         if (outerDelta != 0.0) {
           if (_stretchHeaderSlivers) {
             // Kenshin: if has stretch header, let _outerPosition consume all scroll delta;
@@ -1333,12 +1323,8 @@ class _NestedScrollPosition extends ScrollPosition
   Key? setScrollPositionKey() {
     //if (haveDimensions) {
 
-    final ScrollableState scroll = context as ScrollableState;
-    if (!scroll.mounted) {
-      return null;
-    }
     final NestedScrollViewInnerScrollPositionKeyWidget? keyWidget =
-        scroll.context.findAncestorWidgetOfExactType<
+        (context as ScrollableState).context.findAncestorWidgetOfExactType<
             NestedScrollViewInnerScrollPositionKeyWidget>();
     _key = keyWidget?.scrollPositionKey;
 //
