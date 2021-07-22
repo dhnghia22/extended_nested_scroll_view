@@ -731,7 +731,7 @@ class _NestedScrollCoordinator
     }
 
     // Kenshin: if innser scrollview is scrolled beyond top, change _outerPosition only
-    if (innerPosition == null || (_stretchHeaderSlivers && innerPosition.pixels == 0.0)) {
+    if (innerPosition == null || (_stretchHeaderSlivers && innerPosition.pixels <= 0.0)) {
       // It's either just us or a velocity=0 situation.
       return _outerPosition!.createBallisticScrollActivity(
         _outerPosition!.physics
