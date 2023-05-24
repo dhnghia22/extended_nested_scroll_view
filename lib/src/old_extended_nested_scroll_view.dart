@@ -503,13 +503,14 @@ class _NestedScrollMetrics extends FixedScrollMetrics {
     required this.minRange,
     required this.maxRange,
     required this.correctionOffset,
+    required double devicePixelRatio,
   }) : super(
-          minScrollExtent: minScrollExtent,
-          maxScrollExtent: maxScrollExtent,
-          pixels: pixels,
-          viewportDimension: viewportDimension,
-          axisDirection: axisDirection,
-        );
+            minScrollExtent: minScrollExtent,
+            maxScrollExtent: maxScrollExtent,
+            pixels: pixels,
+            viewportDimension: viewportDimension,
+            axisDirection: axisDirection,
+            devicePixelRatio: devicePixelRatio);
 
   @override
   _NestedScrollMetrics copyWith({
@@ -521,17 +522,18 @@ class _NestedScrollMetrics extends FixedScrollMetrics {
     double? minRange,
     double? maxRange,
     double? correctionOffset,
+    double? devicePixelRatio,
   }) {
     return _NestedScrollMetrics(
-      minScrollExtent: minScrollExtent ?? (hasContentDimensions ? this.minScrollExtent : null),
-      maxScrollExtent: maxScrollExtent ?? (hasContentDimensions ? this.maxScrollExtent : null),
-      pixels: pixels ?? (hasPixels ? this.pixels : null),
-      viewportDimension: viewportDimension ?? (hasViewportDimension ? this.viewportDimension : null),
-      axisDirection: axisDirection ?? this.axisDirection,
-      minRange: minRange ?? this.minRange,
-      maxRange: maxRange ?? this.maxRange,
-      correctionOffset: correctionOffset ?? this.correctionOffset,
-    );
+        minScrollExtent: minScrollExtent ?? (hasContentDimensions ? this.minScrollExtent : null),
+        maxScrollExtent: maxScrollExtent ?? (hasContentDimensions ? this.maxScrollExtent : null),
+        pixels: pixels ?? (hasPixels ? this.pixels : null),
+        viewportDimension: viewportDimension ?? (hasViewportDimension ? this.viewportDimension : null),
+        axisDirection: axisDirection ?? this.axisDirection,
+        minRange: minRange ?? this.minRange,
+        maxRange: maxRange ?? this.maxRange,
+        correctionOffset: correctionOffset ?? this.correctionOffset,
+        devicePixelRatio: devicePixelRatio ?? this.devicePixelRatio);
   }
 
   final double minRange;
@@ -801,6 +803,7 @@ class _NestedScrollCoordinator implements ScrollActivityDelegate, ScrollHoldCont
       minRange: minRange,
       maxRange: maxRange,
       correctionOffset: correctionOffset,
+      devicePixelRatio: _outerPosition!.devicePixelRatio,
     );
   }
 
